@@ -1,4 +1,5 @@
 import { cssPath, xPath } from "playwright-dompath";
+import { timeout } from "../../../playwright.config";
 const json = require("$/tools/data-process/json_parse");
 
 exports.JanboxHomePage = class JanboxHomePage{
@@ -17,11 +18,17 @@ exports.JanboxHomePage = class JanboxHomePage{
         var category_elements = await this.page.locator('xpath=//ul[@class="widget__category"]/li')
         this.category_list_count = await category_elements.count()
         for (var i = 0; i < this.category_list_count; i++){
+            console.log('Category: ' + i);
             var category = {}
-            category['xpath'] = await xPath(category_elements.nth(i))
-            // await console.log(await category_elements.nth(i).locator('//a').getAttribute('href'));
+            var xpath = await xPath(category_elements.nth(i))
+            category['xpath'] = xpath
+            await console.log(await category_elements.nth(i).locator('//a').getAttribute('href'));
             category['category_id'] = (await category_elements.nth(i).locator('//a').getAttribute('href')).replace('index.html?category=', '')
+            await this.page.locator(xpath.replace('/html', 'xpath=/')).click()
+            await this.page.waitForSelector('.product')
+            await this.page.waitForLoadState('networkidle')
             category['product'] = await this.get_product_list()
+            await this.page.goBack()
             await this.data.push(category)
             // await console.log(await xPath(category_element.nth(i)));
         }
@@ -41,11 +48,16 @@ exports.JanboxHomePage = class JanboxHomePage{
     // }
     async get_product_list(){
         var product_elements = await this.page.locator('xpath=//li[@class="product"]')
-        this.product_list_count = await product_elements.count()
-        for (var i = 0; i< this.product_list_count; i++){
+        var product_list_count = await product_elements.count()
+        var product_list = []
+        for (var i = 0; i< product_list_count; i++){
+            console.log('Product: ' + i);
             var product = {}
-            
-            await this.product_list.push(await product_elements.nth(i))
+            product['xpath'] = await xPath(product_elements.nth(i))
+            // await console.log(await category_elements.nth(i).locator('//a').getAttribute('href'));
+            product['product_id'] = (await product_elements.nth(i).locator('//div[@class="product-holder"]/a').getAttribute('href')).replace('shop-single.html?id=', '')
+            await product_list.push(product)
         }
+        return product_list
     }
 }
