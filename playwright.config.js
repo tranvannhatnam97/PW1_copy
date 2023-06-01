@@ -12,7 +12,7 @@ const { defineConfig, devices } = require('@playwright/test');
  */
 module.exports = defineConfig({
   expect: {
-    timeout: 40 * 1000,
+    timeout: 10 * 1000,
   },
   timeout : 300 * 1000,
   // use: {

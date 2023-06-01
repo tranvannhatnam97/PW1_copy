@@ -11,7 +11,7 @@
     "@playwright/test": "^1.34.3",
     "basetag": "^2.1.0"
   },
-  "base_path": "C:/Users/hi/Documents/PlaywrightProjects/PWProject_1_copy/",
+  "base_path": "C:/Users/ASUS/Documents/CodeProject/PlaywrightProjects/PW1_copy/",
   "dependencies": {
     "playwright-dompath": "^0.0.7"
   }

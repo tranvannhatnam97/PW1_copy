@@ -1,26 +1,56 @@
-const { test, chromium, expect, Page } = require('@playwright/test');
+const { test, chromium, webkit, expect, Page } = require('@playwright/test');
 const json = require("$/tools/data-process/json_parse");
 const { JanboxCategoryPage } = require('$/model/crawler/category/janbox_category');
 const { JanboxHomePage } = require('$/model/crawler/home/janbox_home');
+const { YahooAuctionCategoryPage } = require('$/model/crawler/category/yahooauction_category')
 test.describe.serial("Test e2e crawler", async () => {
-    let page;
+    // let page;
     let homepage;
+    let yahoopage
+    let data
     test('janbox', async ({ page }) => {
-        var i = 0
         homepage = new JanboxHomePage(page)
         await homepage.go_to_page()
         await homepage.set_category_list()
+        await console.log(homepage.data.length);
+        for (var i = 0; i < homepage.data.length; i++) {
+            if (homepage.data[i] == undefined) {
+                break
+            }
+            await console.log("Click category " + i + ': ' + homepage.data[i]['text']);
+            await homepage.page.locator(homepage.data[i]['xpath']).click()
+            await homepage.page.waitForSelector('.widget__category')
+            await homepage.page.waitForLoadState('networkidle')
+            await homepage.set_product_list(i)
+            await console.log(homepage.data[i]['products'].length);
+            await homepage.page.goBack()
+        }
+        data = homepage.data
         await homepage.store_data()
-        // for (var category of await homepage.category_list){
-        //     console.log("Click category "+ i++);
-            
-        //     await category.click()
-        //     await homepage.page.waitForSelector('.widget__category')
-        //     await homepage.page.waitForLoadState('networkidle')
-
-        //     await homepage.page.goBack()
-        // }
     })
+    test('yahoo', async ({ page }) => {
+
+        yahoopage = new YahooAuctionCategoryPage(page)
+        await console.log(data.length);
+        for (var i = 0; i < data.length; i++) {
+            var category_id = data[i]['category_id']
+            await yahoopage.go_to_page(category_id)
+            await yahoopage.set_product_list()
+            // await console.log(yahoopage.product_list);
+            var janbox_products = data[i]['products']
+            var yahoo_products = yahoopage.product_list
+            for (var j = 0; j < yahoo_products.length; j++){
+                // await console.log(yahoo_products[j]['product_id'] + '--' + janbox_products[j]['product_id']);
+                if ()
+                await expect.soft(yahoo_products[j]['product_id'], "Category "+ category_id + ': ' + data[i]['text'] +" product "+ j + " no match").toEqual(janbox_products[j]['product_id'])
+            }
+            await yahoopage.page.goBack()
+        }
+
+    })
+
+
+
 
 
 
